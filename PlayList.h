@@ -1,27 +1,11 @@
-#ifndef ENHANCED_PLAY_LIST_H_
-#define ENHANCED_PLAY_LIST_H_
+#ifndef PLAY_LIST_H_
+#define PLAY_LIST_H_
 
 #include "LinkedSet.h"
 #include "Song.h"
     
 class PlayList : public LinkedSet<Song> {
 
-//Inherited Protected Members from LinkedSet
-    
-protected:
-    
-    // Pointer to first node
-    
-    Node<Song>* head_ptr_;
-    
-    // Current count of set items
-    
-    int item_count_;
-    
-    // Returns either a pointer to the node containing a target or the null pointer if the target is not in the set.
-    
-    Node<Song>* getPointerTo(const Song& target) const;
-   
 public:
     
     //Default constructor

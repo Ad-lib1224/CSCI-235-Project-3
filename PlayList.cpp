@@ -9,7 +9,9 @@ using namespace std;
     
 PlayList::PlayList() {
     
+    head_ptr_ = nullptr;
     tail_ptr_ = nullptr;
+    item_count_ = 0;
     
 }
 //Parameterized Constructor
@@ -17,22 +19,117 @@ PlayList::PlayList(const Song& a_song) {
     
     add(a_song); 
 }
-//Loop Playlist
-void PlayList::loop() {
-    tail_ptr_->setNext(head_ptr_);
-    
-}
-void PlayList::unloop() {
- 
-    clear();
-}
+
 // Destructor
     
 PlayList::~PlayList() {
     
     unloop();
-    clear();
+    
 }
+
+//Add Override
+//adds a new song to the end of the playlist if it isn't included already
+bool PlayList::add(const Song &new_song) {
+  // checks if song is already in playlist using contains from linked set
+  // false if song is already in playlist
+    
+    if (contains(new_song)) {
+
+      return false;
+      
+  } else {
+    
+    Node<Song> *new_node_ptr =
+        
+        new Node<Song>;              // allocates memory for a new node
+    
+        new_node_ptr->setItem(new_song); // puts the new song in it
+    
+        new_node_ptr->setNext(nullptr);  // marks node as the end of the chain
+    // case if the playlist is empty, added item is the first and last
+        if (item_count_ == 0) {
+        
+            head_ptr_ = new_node_ptr;
+        
+            tail_ptr_ = new_node_ptr;
+    
+    } else {
+      // if the playlist is not empty, point the last item to it, then make it the tail pointer
+      
+        tail_ptr_->setNext(new_node_ptr);
+        
+        tail_ptr_ = tail_ptr_->getNext();
+    }
+    
+        item_count_++;
+    
+        return true;
+
+    }
+    
+}
+
+//Remove Override
+
+bool PlayList::remove(const Song& a_song) {
+    
+   Node<Song>* previous_ptr_ = nullptr;//create a previous pointer
+    
+   Node<Song>* temp_ptr_ = getPointerTo(a_song, previous_ptr_);
+    
+   if (temp_ptr_ == nullptr) {
+       
+       return 0;
+       
+   } else {
+       
+       if(head_ptr_ == temp_ptr_) {
+           
+           head_ptr_ = temp_ptr_->getNext();
+           
+           item_count_--;
+           
+           return true;
+       
+   } else if (tail_ptr_ == temp_ptr_) {
+           
+           previous_ptr_->setNext(nullptr);
+           
+           tail_ptr_ = previous_ptr_;
+           
+           item_count_--;
+           
+           return true;
+           
+       } else {
+           
+           previous_ptr_->setNext(temp_ptr_->getNext());
+           
+           item_count_--;
+           
+           return true;
+           
+       }
+       
+   }
+  
+	return 0;
+
+} // end remove
+
+//Loop Playlist
+void PlayList::loop() {
+    
+    tail_ptr_->setNext(head_ptr_);
+    
+}
+
+void PlayList::unloop() {
+ 
+    tail_ptr_->setNext(nullptr);
+}
+
 //Display PlayList
 void PlayList::displayPlayList() {
     
@@ -48,127 +145,54 @@ void PlayList::displayPlayList() {
     
 }
 //Transverses the chain and returns a pointer to the last node
-    
-//Add Override
-bool PlayList::add(const Song& new_entry) {
-    
-    if(!contains(new_entry)) {
-        
-        //Add to the end of chain
-        
-        //(head_ptr_ is null if chain is empty)
-        
-        Node<Song>* next_node_ptr = new Node<Song>();
-        
-        next_node_ptr->setItem(new_entry);
-        
-        // New node points to chain
-        
-        next_node_ptr->setNext(head_ptr_);  
-        
-        head_ptr_ = next_node_ptr;
-        
-        // New node is now first node
-        
-       item_count_++;
-    
-       return true;
-    
-    } else
-        return false;
-    
-}  // end add
-//Remove Override
  
-bool PlayList::remove(const Song& a_song) {
-   Node<Song>* previous_ptr = nullptr;//create a previous pointer
+Node<Song> *PlayList::getPointerToLastNode() const {
     
-   Node<Song>* entry_node_ptr_ = getPointerTo(a_song, previous_ptr);
+  // cylces through each node until it finds one that points to nullptr and
+  // returns a pointer to it
     
-   bool can_remove_item = !isEmpty() && (entry_node_ptr_ != nullptr);
+  Node<Song> *current = head_ptr_;
     
-   if (entry_node_ptr_ == head_ptr_) {
-           
-       // create a temp pointer
-       
-       Node<Song>* temp_ptr_;
-       //set head pointer to temp pointer
-       temp_ptr_ = head_ptr_;
-       //set head pointer to headpoint->getNext()
-       head_ptr_ = head_ptr_->getNext();
-           
-       //temp pointer = nullptr
-       
-       temp_ptr_ = nullptr;
-       //delete temp pointer
-       
-       delete temp_ptr_;
-       
-       item_count_--;
-       
-       return true;
-       
-   } else {
-       
-       if (can_remove_item) {
-           
-           previous_ptr->setNext(entry_node_ptr_->getNext());
-           
-           entry_node_ptr_ = nullptr;
-           
-           entry_node_ptr_->getNext();
-           
-           delete entry_node_ptr_;
-           
-           item_count_--;
-           
-       }                     
-  
-	return can_remove_item;
-   }// end remove
-}
-Node<Song>* PlayList::getPointerTo(const Song& target, Node<Song>*& previous_ptr) const {
+  Node<Song> *previous = nullptr;
     
-    bool found = false;
-   
-    Node<Song>* cur_ptr_ = head_ptr_;
-    
-    Node<Song>* pre_ptr_ = head_ptr_;
-    
-    while (cur_ptr_ != nullptr) {
-        
-      if (target == cur_ptr_->getItem())
-          
-         found = true;
-        
-      else
-         
-          pre_ptr_ = cur_ptr_;
-        
-          cur_ptr_ = cur_ptr_->getNext();
-   
-    } // end while
-    
-    previous_ptr = pre_ptr_;
-    
-    return cur_ptr_;
-} // end getPointerTo
-Node<Song>* PlayList::getPointerToLastNode() const { 
-    
-    Node<Song>* pre_ptr_ = head_ptr_;
-    
-    if (head_ptr_ == nullptr) {
-        
-        pre_ptr_ = nullptr;
+  while (current != nullptr) {
       
-    } else {
+    previous = current;
+      
+    current = current->getNext();
+      
+  }
+    
+  return previous;
+}
+
+Node<Song> *PlayList::getPointerTo(const Song &target, Node<Song> *&previous_ptr) const {
+    
+    Song my_target = target;
+    
+    Node<Song> *current = head_ptr_;
+    
+    Node<Song> *previous = nullptr;
+  // cycles through each node until it finds one whose song matches target,
+  // which it returns
+  // if nothing is found, nullptr is returned
+    
+    while (current != nullptr) {
         
-        while (pre_ptr_->getNext() != nullptr)
+        if (current->getItem() == my_target) {
             
-            pre_ptr_ = pre_ptr_->getNext();
+            previous_ptr = previous;
             
+            return current;
+        
         }
         
-        return pre_ptr_;
+    previous = current;
+        
+    current = current->getNext();
+        
+  }
+    
+  return nullptr;
     
 }
